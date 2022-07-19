@@ -12,11 +12,15 @@ const (
 	printableASCIIChars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 )
 
+var (
+	randSeed int64
+)
+
 // Generates a random alphanumeric string of the given length.
 // Call to generate a password or salt.
 func RandAlphanumericString(slen int) string {
 
-	rand.Seed(time.Now().UnixNano())
+	refreshSeed()
 
 	b := make([]byte, slen)
 	for i := range b {
@@ -29,11 +33,25 @@ func RandAlphanumericString(slen int) string {
 // Call to generate a password or salt.
 func RandASCIIString(slen int) string {
 
-	rand.Seed(time.Now().UnixNano())
+	refreshSeed()
 
 	b := make([]byte, slen)
 	for i := range b {
 		b[i] = printableASCIIChars[rand.Intn(len(printableASCIIChars))]
 	}
 	return string(b)
+}
+
+func refreshSeed() {
+
+	previousSeed := randSeed
+
+	for {
+		randSeed = time.Now().UnixNano()
+
+		if previousSeed != randSeed {
+			break
+		}
+	}
+	rand.Seed(randSeed)
 }
